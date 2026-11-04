@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="theme-color" content="rgb(191, 54, 12)" />
+    <title>Run Tracker</title>
+    <link rel="stylesheet" type="text/css" href="./src/css/header.css?v=1.0.0" />
+    <link rel="stylesheet" type="text/css" href="./src/css/softkey.css?v=1.0.0" />
+    <link rel="stylesheet" type="text/css" href="./src/css/run-tracker.css?v=1.0.0" />
+    <link rel="stylesheet" type="text/css" href="./src/css/root.css?v=1.0.0" />
+</head>
+
+<body>
+    <div id="root">
+        <div class="panel" id="main-ui" active="true">
+            <div class="flex col info">
+                <span class="label">GPS</span>
+                <span class="value" id="gps-status">Off</span>
+            </div>
+            <div class="flex col info big">
+                <span class="label">Time</span>
+                <span class="value" id="elapsed">00:00</span>
+            </div>
+            <div class="flex row">
+                <div class="flex col info grow">
+                    <span class="label">km</span>
+                    <span class="value" id="distance-km">0.00</span>
+                </div>
+                <div class="flex col info grow">
+                    <span class="label">mi</span>
+                    <span class="value" id="distance-mi">0.00</span>
+                </div>
+            </div>
+            <div class="flex col info">
+                <span class="label">Status</span>
+                <span class="value" id="record-status">Not recording</span>
+            </div>
+            <button nav-selectable="true" id="primary">Get GPS</button>
+            <button nav-selectable="false" id="stop-gps" class="hidden">Stop GPS</button>
+            <button nav-selectable="true" id="view-runs">View Runs</button>
+        </div>
+        <div class="panel" id="runs-ui" active="false">
+            <header>
+                <span>Runs</span>
+            </header>
+            <div class="flex col info hidden" id="runs-empty">
+                <span class="value">No runs recorded yet.</span>
+            </div>
+            <div class="flex col" id="runs-list"></div>
+        </div>
+        <div class="panel" id="detail-ui" active="false">
+            <header>
+                <span id="detail-title">Run</span>
+            </header>
+            <div class="flex row">
+                <div class="flex col info grow">
+                    <span class="label">Distance</span>
+                    <span class="value" id="detail-distance"></span>
+                </div>
+                <div class="flex col info grow">
+                    <span class="label">Time</span>
+                    <span class="value" id="detail-duration"></span>
+                </div>
+            </div>
+            <div class="flex col info">
+                <span class="label">Avg pace</span>
+                <span class="value" id="detail-pace"></span>
+            </div>
+            <div class="flex col info">
+                <span class="label">Avg speed</span>
+                <span class="value" id="detail-speed"></span>
+            </div>
+            <div class="flex col info">
+                <span class="label">Sharing</span>
+                <span class="value" id="detail-share"></span>
+            </div>
+            <button nav-selectable="true" id="upload">Upload &amp; share run</button>
+            <button nav-selectable="false" id="open-map" class="hidden">Open map</button>
+            <button nav-selectable="true" id="delete-run">Delete run</button>
+            <div class="flex col info">
+                <span class="label">GPS samples</span>
+                <span class="value" id="detail-samples"></span>
+            </div>
+        </div>
+        <div id="softkey">
+            <label id="left" onclick="Nav.softkey('SoftLeft');"></label>
+            <label id="center">SELECT</label>
+            <label id="right" onclick="Nav.softkey('SoftRight');"></label>
+        </div>
+    </div>
+    <script type="text/javascript" src="./src/js/stats.js?v=1.0.0"></script>
+    <script type="text/javascript" src="./src/js/nav.js?v=1.0.0"></script>
+    <script type="text/javascript" src="./src/js/db.js?v=1.0.0"></script>
+    <script type="text/javascript" src="./src/js/gps.js?v=1.0.0"></script>
+    <script type="text/javascript" src="./src/js/api.js?v=1.0.0"></script>
+    <script type="text/javascript" src="./src/js/app.js?v=1.0.0"></script>
+</body>
+
+</html>

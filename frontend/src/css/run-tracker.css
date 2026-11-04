@@ -1,0 +1,120 @@
+[nav-selectable] {
+  margin: 2.5px 10px;
+}
+[nav-selectable] > * {
+  margin: 0;
+}
+button {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 18px;
+  border: 2px solid #555;
+  font-weight: bold;
+  padding: 3px 10px;
+}
+
+button:focus {
+  background-color: #bf360c;
+  border-color: #bf360c;
+  color: white;
+}
+
+button[nav-selectable="false"] {
+  background-color: #999;
+  color: #555;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.info {
+  background-color: white;
+  padding: 3px 20px;
+  margin: 2.5px 10px;
+  border-radius: 18px;
+  overflow:hidden;
+}
+
+.label {
+  color: #555;
+  font-size: x-small;
+  margin-right: 5px;
+}
+
+.value{
+  color: black;
+  font-size: small;
+  flex-grow: 1;
+}
+
+.value::after {
+  content: "\00a0";
+}
+
+.big .value {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.flex.row > .info + .info {
+  margin-left: 0;
+}
+
+.run-row {
+  height: auto;
+  min-height: 36px;
+  font-size: small;
+}
+
+.dialog-bg {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+  background-color: #5555557c;
+}
+
+.dialog {
+  display:flex;
+  flex-direction:column;
+  position: fixed;
+  bottom: 30px;
+  left: 0px;
+  width: 100%;
+  z-index: 3;
+  background-color: white;
+}
+
+.dialog .title {
+  background-color: #bf360c;
+  color: white;
+  font-weight: bold;
+  padding: 2px 5px;
+}
+.dialog .body {
+  padding: 2px 5px;
+}
+
+.flex {
+  display: flex;
+}
+
+.col {
+  flex-direction: column;
+}
+
+.row {
+  flex-direction: row;
+}
+
+.grow {
+  flex-grow: 1;
+  flex-basis: 0;
+}
