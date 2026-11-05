@@ -81,23 +81,20 @@ aws lambda create-function \
   --no-cli-pager
 ```
 
-- [ ] Set the environment variables. Use JSON here because `DOMAIN_NAMES` contains commas, which break the CLI's shorthand syntax. Replace the key placeholder with the sharer Lambda's `GOOGLE_API_KEY` value.
+- [ ] Set the environment variables. Use JSON here because `DOMAIN_NAMES` contains commas, which break the CLI's shorthand syntax. Replace the key placeholder with the value of `run-tracker-api-key`, found under Credentials → Show key in the "tenor" project.
 
 ```sh
 aws lambda update-function-configuration --function-name $FUNCTION --no-cli-pager --environment '{
   "Variables": {
     "APP_NAME": "kaios-run-tracker",
     "DYNAMODB_TABLE_NAME": "kaios-run-tracker-prod",
-    "DOMAIN_NAMES": "https://runtracker.elliscode.com",
-    "GOOGLE_API_KEY": "PASTE_THE_SAME_KEY_THE_SHARER_USES"
+    "DOMAIN_NAMES": "https://runtracker.elliscode.com,http://runtracker.localhost",
+    "GOOGLE_API_KEY": "PASTE_RUN_TRACKER_API_KEY"
   }
 }'
 ```
 
-  To copy the key without opening the console:
-  `aws lambda get-function-configuration --function-name kaios-gps-location-sharer-backend-prod --query Environment.Variables.GOOGLE_API_KEY --output text`
-
-  `DOMAIN_NAMES` still needs the KaiOS app's origin added. Step 8 covers that.
+  `DOMAIN_NAMES` lists the share page's origin and the KaiOS app's origin (`http://runtracker.localhost`). See step 8 if uploads from the app get a 403.
 
 ## 4. API Gateway (console, same setup as the sharer)
 
@@ -132,20 +129,16 @@ aws s3api create-bucket --bucket $BUCKET --region us-east-1
 
 ## 7. Google Cloud (Maps)
 
-- [ ] On the API key the sharer uses, add `https://runtracker.elliscode.com/*` to its **HTTP referrer** restrictions. Without this, the share page shows Google's "Oops! Something went wrong."
-- [ ] Under Google Maps Platform → Map management, create a Map ID (JavaScript, any style). Advanced markers require one.
-- [ ] Replace `DEMO_MAP_ID` in `website/js/map.js` with the new Map ID.
+- [x] Create a dedicated key, `run-tracker-api-key`, separate from the sharer's. It's restricted to the Maps JavaScript API, with `https://runtracker.elliscode.com/*` as its only HTTP referrer. Any other referrer gets Google's "Oops! Something went wrong."
+- [x] Under Google Maps Platform → Map management, create a Map ID. Done: `kaios-run-tracker`, JavaScript/raster, `1bd00ae1989c1926be6665cb`, set in `website/js/map.js`. Advanced markers require one.
 
-## 8. Allow the KaiOS app's origin
+## 8. KaiOS app origin
 
-The API rejects any request whose `Origin` header isn't in `DOMAIN_NAMES`, which includes uploads from the app.
+The API rejects any request whose `Origin` header isn't in `DOMAIN_NAMES`, and that includes uploads from the app. The app's origin, `http://runtracker.localhost`, is already in step 3's environment variables.
 
-- [ ] Check whether T9 Wizard already lists the KaiOS app origin format:
-  `aws lambda get-function-configuration --function-name t9-wizard-api-prod --query Environment.Variables.DOMAIN_NAMES --output text`
-- [ ] Otherwise, install the app (step 10), try **Upload & share run** once (it fails with a 403), then find the origin in the logs. The Lambda logs every request's headers on the first line.
+- [ ] If an upload from the phone still gets a 403, check which origin the phone actually sent. The Lambda logs every request's headers on the first line.
   `aws logs tail /aws/lambda/$FUNCTION --since 10m | grep -i origin`
-- [ ] Re-run the `update-function-configuration` command from step 3 with the origin added, for example
-  `"DOMAIN_NAMES": "https://runtracker.elliscode.com,<app origin>"`.
+  Then re-run step 3's `update-function-configuration` with that origin in `DOMAIN_NAMES`.
 
 ## 9. Release the website
 

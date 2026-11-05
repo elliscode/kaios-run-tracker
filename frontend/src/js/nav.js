@@ -8,6 +8,7 @@ const Nav = (function () {
   const rightElement = document.getElementById('right');
   const dialogs = [];
   const scrollIntervals = [];
+  const SOFTKEY_CLEARANCE = 34; // #softkey's 30px height plus a little gap
 
   let globalInteractTimer = new Date(0);
   // { onLeft, onRight, onEnter } while a dialog is open, else null
@@ -18,8 +19,15 @@ const Nav = (function () {
   // returns true when it handled the key
   let keyHandler = function () { return false; };
 
+  // The ad banner sits outside the panels and carries the KaiAds SDK's
+  // navClass instead of nav-selectable="true" (see ads.js); document order
+  // keeps it last.
   function getAllElements() {
-    return Array.from(document.querySelectorAll('[active="true"] [nav-selectable="true"]'));
+    return Array.from(document.querySelectorAll('[active="true"] [nav-selectable="true"], #ad-container .nav-selectable-ad'));
+  }
+  function isSelectable(element) {
+    return !!element && !!element.getAttribute &&
+      (element.getAttribute('nav-selectable') == 'true' || element.classList.contains('nav-selectable-ad'));
   }
   function selectFirstElement() {
     const allElements = getAllElements();
@@ -63,8 +71,9 @@ const Nav = (function () {
     if (desiredIndex == 0) {
       window.scrollTo({ top: 0 });
     } else {
+      // keep the whole element (36px buttons, the 60px ad) above the softkey bar
       const rect = allElements[desiredIndex].getBoundingClientRect();
-      const diff = (rect.y + 80) - window.innerHeight;
+      const diff = (rect.bottom + SOFTKEY_CLEARANCE) - window.innerHeight;
       if (diff > 0) {
         window.scrollBy({ top: diff });
       }
@@ -132,7 +141,7 @@ const Nav = (function () {
         }
         globalInteractTimer = currentDate;
         event.preventDefault();
-        if (event.target && event.target.getAttribute && event.target.getAttribute('nav-selectable') == 'true') {
+        if (isSelectable(event.target)) {
           event.target.click();
         }
       }

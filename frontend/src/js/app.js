@@ -97,7 +97,8 @@ function renderMain() {
   viewRunsElement.setAttribute('nav-selectable', mode == 'recording' ? 'false' : 'true');
   if (mainUi.getAttribute('active') == 'true') {
     Nav.setPanelSoftkeys.apply(null, mode == 'recording' ? RECORDING_SOFTKEYS : MAIN_SOFTKEYS);
-    if (!document.activeElement || document.activeElement.getAttribute('nav-selectable') != 'true') {
+    const focused = document.activeElement;
+    if (!focused || (focused.getAttribute('nav-selectable') != 'true' && !focused.classList.contains('nav-selectable-ad'))) {
       Nav.selectFirstElement();
     }
   }

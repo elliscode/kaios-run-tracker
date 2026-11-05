@@ -118,3 +118,39 @@ button[nav-selectable="false"] {
   flex-grow: 1;
   flex-basis: 0;
 }
+
+/* KaiOS ad banner (see ads.js) -- a persistent 60px block whether or not an
+   ad is loaded, so the page doesn't reflow on each refresh. The bottom
+   margin keeps it clear of the fixed softkey bar. */
+#ad-container {
+  width: 100%;
+  height: 60px;
+  min-height: 60px;
+  margin: 2.5px 0 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #333;
+}
+
+/* max-width rather than a hard 240px, so a screen narrower than 240px
+   doesn't overflow sideways (see foursure's notes/kaios-softkey-fixed-
+   position-bug.md) */
+.nav-selectable-ad {
+  width: 240px;
+  max-width: 100%;
+  height: 60px;
+  overflow: hidden;
+  outline: none;
+}
+
+.nav-selectable-ad:focus {
+  box-shadow: inset 0 0 0 3px #bf360c;
+}
+
+.nav-selectable-ad img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

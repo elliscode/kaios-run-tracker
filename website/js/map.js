@@ -1,9 +1,8 @@
 // Loaded by view.js once apiKey and routePoints are set. Same Google Maps
 // bootstrap loader as the GPS Location Sharer's website/js/map.js.
 
-// Replace with this project's Map ID from Google Cloud Console (see
-// docs/deployment-checklist.md). DEMO_MAP_ID works for testing only.
-const MAP_ID = 'DEMO_MAP_ID';
+// "kaios-run-tracker" raster Map ID in the Google Cloud project "tenor"
+const MAP_ID = '1bd00ae1989c1926be6665cb';
 const ROUTE_COLOR = '#bf360c';
 
 // prettier-ignore

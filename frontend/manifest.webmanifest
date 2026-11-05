@@ -1,7 +1,6 @@
 {
-    "id": "Run-Tracker",
+    "id": "runtracker",
     "name": "Run Tracker",
-    "short_name": "Run Tracker",
     "description": "Track your outdoor runs with GPS. Record distance, time, pace and speed, keep every run on your phone, and optionally upload a run to view its route on a map.",
     "lang": "en-US",
     "theme_color": "#bf360c",
@@ -25,10 +24,13 @@
         "permissions": {
             "geolocation": ""
         },
-        "version": "1.0.0",
+        "version": "3.0.0",
         "developer": {
             "name": "elliscode",
             "url": "http://www.elliscode.com"
+        },
+        "dependencies": {
+            "ads-sdk": "1.5.8"
         }
     }
 }
