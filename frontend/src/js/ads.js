@@ -43,7 +43,7 @@ function displayAd() {
   const wasFocused = removeAds();
   showAdPlaceholder();
   if (wasFocused) {
-    adContainer.firstElementChild.focus();
+    Nav.focusElement(adContainer.firstElementChild);
   }
   if (typeof getKaiAd !== 'function') {
     return;

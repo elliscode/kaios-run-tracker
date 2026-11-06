@@ -9,13 +9,13 @@ A simple GPS running tracker for KaiOS 3.x / 4.x. It records raw GPS samples at 
 | `frontend/` | The KaiOS app (vanilla JS, no dependencies) |
 | `frontend/src/js/stats.js` | Distance/pace math, the single source shared with the website |
 | `backend/lambda/` | Python Lambda for `api.runtracker.elliscode.com` (`POST /upload`, `POST /view`) |
-| `website/` | `runtracker.elliscode.com`: landing page and `view/index.html?id=…` share page |
+| `website/` | `runtracker.elliscode.com`: landing page and the `/view/<id>` share page (`cloudfront/view-rewrite.js` maps that path to `view/index.html`) |
 | `docs/deployment-checklist.md` | AWS and Google Cloud setup, step by step |
 
 ## How a run is stored
 
 - Each GPS sample is `{timestamp, latitude, longitude, altitude, accuracy, altitudeAccuracy}`. Raw samples are never modified.
-- Distance only counts samples with accuracy ≤ 25 m. A point has to move farther than its accuracy radius from the last counted point. Jumps that imply more than 7 m/s are ignored. The thresholds are constants at the top of `stats.js`.
+- Distance only counts samples with accuracy ≤ 25 m. A point has to move farther than its accuracy radius from the last counted point. Jumps that imply more than 12.5 m/s are ignored. The thresholds are constants at the top of `stats.js`.
 - Cached stats carry a `statsVersion`. Bumping `STATS_VERSION` recomputes every stored run from its raw samples.
 - While recording, the run is checkpointed every 15 s and when the app goes to the background. If the app is killed mid-run, the next launch offers to save or discard what was recorded.
 
@@ -25,7 +25,7 @@ A simple GPS running tracker for KaiOS 3.x / 4.x. It records raw GPS samples at 
   - `node --test tests/stats.test.mjs` runs the stats tests.
   - `cd backend && python3 -m unittest discover tests` runs the backend tests. boto3 is stubbed, so they make no AWS calls.
 - **App in a desktop browser:** serve `frontend/` (for example `python3 -m http.server` from inside it) and open `index.html?mock=1`. Mock mode replaces the GPS with a synthetic ~3 m/s loop. Arrow keys and Enter navigate. Softkeys are the labels at the bottom, or dispatch `SoftLeft`/`SoftRight` key events.
-- **Share page locally:** copy `frontend/src/js/stats.js` to `website/js/stats.js` (the copy is gitignored), then serve `website/`. It calls the real API.
+- **Share page locally:** copy `frontend/src/js/stats.js` to `website/js/stats.js` (the copy is gitignored), serve `website/`, and open `/view/index.html?id=<id>`. A plain static server doesn't apply the CloudFront rewrite, so the `?id=` form is the one that works locally. It calls the real API.
 
 ## Checking on the device
 

@@ -8,6 +8,14 @@
     <meta name="description" content="A run recorded with Run Tracker for KaiOS." />
     <meta name="robots" content="noindex" />
     <link rel="icon" type="image/png" href="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+    <script>
+// KaiOS browsers put "KAIOS/3.1" / "KaiOS/4.0" in the user agent. Checked
+// here, before first paint, rather than with a width media query: zooming
+// the KaiOS browser changes the CSS width and would flip a media query.
+if (/kaios/i.test(navigator.userAgent)) {
+  document.documentElement.classList.add('kaios');
+}
+    </script>
     <style>
 * {
   box-sizing: border-box;
@@ -15,11 +23,21 @@
 html,
 body {
   margin: 0;
+  height: 100%;
   font-family: "Open Sans", sans-serif;
   background-color: #e1e2e1;
   color: #111;
 }
+/* Full-height column: header, stats and footer take what they need and the
+   map fills everything in between. */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+}
 header {
+  flex: none;
   background-color: rgb(191, 54, 12);
   color: white;
   padding: 6px 10px;
@@ -38,10 +56,17 @@ header p {
   font-size: 14px;
 }
 #stats {
+  flex: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 4px;
   padding: 4px;
+}
+/* 2x2 on narrow screens, one row once all four fit, never 3 + 1 */
+@media (min-width: 420px) {
+  #stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 .stat {
   background-color: white;
@@ -64,14 +89,41 @@ header p {
   color: #333;
 }
 #map {
+  flex: 1;
+  min-height: 100px;
   width: 100%;
-  height: 70vh;
-  min-height: 220px;
 }
 footer {
-  padding: 6px 10px 12px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 10px;
   font-size: 11px;
   color: #555;
+}
+#footer-text {
+  flex: 1;
+}
+#download {
+  flex: none;
+  font: inherit;
+  font-weight: bold;
+  color: white;
+  background-color: rgb(191, 54, 12);
+  border: 0;
+  border-radius: 10px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+/* KaiOS (class set by the user-agent check in <head>): map only, at any zoom.
+   The stats are already on the phone that recorded the run, and there's
+   nothing to do with a JSON download. #status stays, so loading/error
+   messages still show. */
+.kaios header,
+.kaios #stats,
+.kaios footer {
+  display: none !important;
 }
 .hidden {
   display: none !important;
@@ -92,9 +144,14 @@ footer {
       <div class="stat"><span class="label">Avg speed</span><span class="value" id="stat-kmh"></span><span class="sub" id="stat-mph"></span></div>
     </div>
     <div id="map" class="hidden"></div>
-    <footer id="footer" class="hidden"></footer>
+    <footer id="footer" class="hidden">
+      <span id="footer-text"></span>
+      <button type="button" id="download">Download JSON</button>
+    </footer>
 
-    <script src="../js/stats.js?v=1.0.0"></script>
-    <script src="../js/view.js?v=1.0.0"></script>
+    <!-- absolute paths: this page is served at /view/<id> (see
+         website/cloudfront/view-rewrite.js), so ../js would resolve wrongly -->
+    <script src="/js/stats.js?v=1.1.2"></script>
+    <script src="/js/view.js?v=1.1.2"></script>
   </body>
 </html>

@@ -124,7 +124,13 @@ aws s3api create-bucket --bucket $BUCKET --region us-east-1
   - Alternate domain: `runtracker.elliscode.com`, using the us-east-1 certificate.
   - Default root object: `index.html`.
   - Viewer protocol: redirect HTTP to HTTPS.
-  - The app opens `/view/index.html?id=…`, so no URL-rewrite function is needed.
+- [ ] Add the share-link rewrite. Share links look like `/view/<id>`, and S3 only has `/view/index.html`:
+  1. CloudFront → **Functions** → Create function, named `run-tracker-view-rewrite` (runtime cloudfront-js-2.0).
+  2. Paste in `website/cloudfront/view-rewrite.js`, then **Save** and **Publish**.
+  3. On the distribution: **Behaviors** → edit the default behavior → **Function associations** → **Viewer request** → CloudFront Functions → `run-tracker-view-rewrite` → Save.
+  4. Check it: `https://runtracker.elliscode.com/view/aaaaaaaaaaaaaaaa` should show the page saying "This run was not found" (once the API is up), not an `AccessDenied` XML error.
+
+  Old `/view/index.html?id=…` links keep working, because the page also reads `?id=`.
 - [ ] In Route 53, create an A (alias) record from `runtracker.elliscode.com` to the distribution.
 
 ## 7. Google Cloud (Maps)
@@ -168,9 +174,10 @@ curl -s -i -X POST https://api.runtracker.elliscode.com/view \
 
 - [ ] On the phone:
   1. Record a short walk.
-  2. Open it and choose **Upload & share run**. You should see "Uploaded", and Sharing should read "Shared · expires …".
-  3. Choose **Open map**. The browser should show the same distance, time, pace, and speed as the app, plus the route with S/F markers.
-  4. Choose **Re-upload run**. The URL (share ID) should stay the same, and the expiry should move out to 30 days from now.
+  2. Open it and choose **Upload & share run**. You should see "Uploaded … until <date>", and the **Open map** and **Send link by SMS** buttons should appear.
+  3. Choose **Open map**. The browser should open `runtracker.elliscode.com/view/<id>` and show the same distance, time, pace, and speed as the app, plus the route with S/F markers.
+  4. Choose **Send link by SMS**. Messages should open with the run summary and the `/view/<id>` link filled in.
+  5. Choose **Re-upload run**. The URL (share ID) should stay the same, and the "Uploaded" dialog's date should move out to 30 days from now.
 
 ## Limits worth knowing
 

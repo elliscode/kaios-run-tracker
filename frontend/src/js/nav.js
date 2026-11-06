@@ -29,10 +29,27 @@ const Nav = (function () {
     return !!element && !!element.getAttribute &&
       (element.getAttribute('nav-selectable') == 'true' || element.classList.contains('nav-selectable-ad'));
   }
+  // Scrolls just enough to keep the whole element (36px buttons, the 60px
+  // ad) between the top of the screen and the softkey bar, in either direction.
+  function revealElement(element) {
+    const rect = element.getBoundingClientRect();
+    const below = (rect.bottom + SOFTKEY_CLEARANCE) - window.innerHeight;
+    if (below > 0) {
+      window.scrollBy({ top: below });
+    } else if (rect.top < 0) {
+      window.scrollBy({ top: rect.top - 4 });
+    }
+  }
+  // Focus without the browser's own scroll-into-view (which knows nothing
+  // about the softkey bar), then reveal it ourselves.
+  function focusElement(element) {
+    element.focus({ preventScroll: true });
+    revealElement(element);
+  }
   function selectFirstElement() {
     const allElements = getAllElements();
     if (allElements.length > 0) {
-      allElements[0].focus();
+      focusElement(allElements[0]);
     }
   }
   function showPanel(panel, softkeys) {
@@ -69,16 +86,10 @@ const Nav = (function () {
     }
     const desiredIndex = (currentIndex + direction + allElements.length) % allElements.length;
     if (desiredIndex == 0) {
+      // wrapping to the first element shows the panel's header too
       window.scrollTo({ top: 0 });
-    } else {
-      // keep the whole element (36px buttons, the 60px ad) above the softkey bar
-      const rect = allElements[desiredIndex].getBoundingClientRect();
-      const diff = (rect.bottom + SOFTKEY_CLEARANCE) - window.innerHeight;
-      if (diff > 0) {
-        window.scrollBy({ top: diff });
-      }
     }
-    allElements[desiredIndex].focus();
+    focusElement(allElements[desiredIndex]);
   }
   function handleScroll(event) {
     if (event.type == 'keydown' && scrollIntervals.length <= 0) {
@@ -202,6 +213,7 @@ const Nav = (function () {
     showPanel: showPanel,
     setPanelSoftkeys: setPanelSoftkeys,
     selectFirstElement: selectFirstElement,
+    focusElement: focusElement,
     showDialog: showDialog,
     showConfirm: showConfirm,
     closeDialogs: closeDialogs,

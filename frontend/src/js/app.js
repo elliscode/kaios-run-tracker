@@ -3,8 +3,9 @@ const FIX_ACCURACY_M = 30; // a reading this good enables Start Recording
 const MIN_SAMPLE_INTERVAL_MS = 900; // ~1 Hz; extra readings are dropped
 const CHECKPOINT_MS = 15 * 1000; // in-progress run saved this often
 const STALE_READING_MS = 10 * 1000; // no reading for this long -> "No signal"
-// index.html spelled out: CloudFront's default root object only covers "/"
-const VIEW_URL = 'https://runtracker.elliscode.com/view/index.html?id=';
+// /view/<id> is rewritten to /view/index.html by a CloudFront function
+// (website/cloudfront/view-rewrite.js)
+const VIEW_URL = 'https://runtracker.elliscode.com/view/';
 const ID_CHARACTERS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -23,10 +24,10 @@ const runsListElement = document.getElementById('runs-list');
 const runsEmptyElement = document.getElementById('runs-empty');
 const uploadElement = document.getElementById('upload');
 const openMapElement = document.getElementById('open-map');
+const smsLinkElement = document.getElementById('sms-link');
 const deleteRunElement = document.getElementById('delete-run');
 
-const MAIN_SOFTKEYS = ['', 'SELECT', 'Runs'];
-const RECORDING_SOFTKEYS = ['', 'SELECT', ''];
+const MAIN_SOFTKEYS = ['', 'SELECT', ''];
 const SUB_SOFTKEYS = ['Back', 'SELECT', ''];
 
 // 'idle' -> 'acquiring' -> 'ready' -> 'recording' -> back to 'idle'
@@ -96,7 +97,7 @@ function renderMain() {
   setSelectable(stopGpsElement, mode == 'acquiring' || mode == 'ready');
   viewRunsElement.setAttribute('nav-selectable', mode == 'recording' ? 'false' : 'true');
   if (mainUi.getAttribute('active') == 'true') {
-    Nav.setPanelSoftkeys.apply(null, mode == 'recording' ? RECORDING_SOFTKEYS : MAIN_SOFTKEYS);
+    Nav.setPanelSoftkeys.apply(null, MAIN_SOFTKEYS);
     const focused = document.activeElement;
     if (!focused || (focused.getAttribute('nav-selectable') != 'true' && !focused.classList.contains('nav-selectable-ad'))) {
       Nav.selectFirstElement();
@@ -140,7 +141,7 @@ function onReading(position) {
   if (mode == 'acquiring' && sample.accuracy <= FIX_ACCURACY_M) {
     mode = 'ready';
     renderMain();
-    primaryElement.focus();
+    Nav.focusElement(primaryElement);
     return;
   }
   if (mode == 'recording' && sample.timestamp - lastSampleTimestamp >= MIN_SAMPLE_INTERVAL_MS) {
@@ -201,7 +202,7 @@ function startRecording() {
   checkpoint();
   checkpointInterval = setInterval(checkpoint, CHECKPOINT_MS);
   renderMain();
-  primaryElement.focus();
+  Nav.focusElement(primaryElement);
 }
 
 function checkpoint() {
@@ -319,7 +320,7 @@ function openRuns(selectId) {
     Nav.showPanel(runsUi, SUB_SOFTKEYS);
     const selected = selectId && runsListElement.querySelector('[data-id="' + selectId + '"]');
     if (selected) {
-      selected.focus();
+      Nav.focusElement(selected);
     }
   });
 }
@@ -344,17 +345,15 @@ function renderDetail() {
   document.getElementById('detail-samples').innerText =
     s.sampleCount + ' recorded, ' + s.keptCount + ' used for distance';
 
-  let shareText = 'Not uploaded';
+  // Whether the run is shared shows through which buttons appear; the expiry
+  // date is in the "Uploaded" dialog and the SMS text.
   if (uploading) {
-    shareText = 'Uploading...';
-  } else if (isShared(run)) {
-    shareText = 'Shared · expires ' + formatDay(run.expiresAt);
-  } else if (run.uploadedAt) {
-    shareText = 'Expired, re-upload to view the map';
+    uploadElement.innerText = 'Uploading...';
+  } else {
+    uploadElement.innerText = run.uploadedAt ? 'Re-upload run' : 'Upload & share run';
   }
-  document.getElementById('detail-share').innerText = shareText;
-  uploadElement.innerText = run.uploadedAt ? 'Re-upload run' : 'Upload & share run';
   setSelectable(openMapElement, isShared(run));
+  setSelectable(smsLinkElement, isShared(run));
 }
 
 function openDetail(id) {
@@ -421,6 +420,18 @@ function openMapClicked() {
   }
 }
 
+// Same approach as the GPS Location Sharer's sendLiveLinkSms(): an sms: link
+// opens the Messages app with the text filled in.
+function smsLinkClicked() {
+  const run = detailRun;
+  const text = 'My run on ' + formatDay(run.startTime) + ': ' + run.stats.distanceKm.toFixed(2) + ' km in ' +
+    RunStats.formatDuration(run.stats.durationMs) + ' — ' + VIEW_URL.substring(8) + run.shareId +
+    ' (link works until ' + formatDay(run.expiresAt) + ')';
+  const smsLink = document.createElement('a');
+  smsLink.href = 'sms://?&body=' + encodeURIComponent(text);
+  smsLink.click();
+}
+
 function deleteClicked() {
   const run = detailRun;
   const sharedNote = isShared(run) ? ' The uploaded copy will expire on its own on ' + formatDay(run.expiresAt) + '.' : '';
@@ -437,7 +448,7 @@ function deleteClicked() {
 // ----------------------------------------------------------------------- keys
 
 function showMain() {
-  Nav.showPanel(mainUi, mode == 'recording' ? RECORDING_SOFTKEYS : MAIN_SOFTKEYS);
+  Nav.showPanel(mainUi, MAIN_SOFTKEYS);
   renderMain();
 }
 
@@ -457,10 +468,6 @@ Nav.setKeyHandler(function (key) {
       confirmStop();
       return true;
     }
-    if (key == 'SoftRight' && mode != 'recording') {
-      openRuns();
-      return true;
-    }
     return false; // Backspace while not recording exits the app as usual
   }
   if (key == 'Backspace' || key == 'SoftLeft') {
@@ -475,6 +482,7 @@ stopGpsElement.addEventListener('click', stopGps);
 viewRunsElement.addEventListener('click', function () { openRuns(); });
 uploadElement.addEventListener('click', uploadClicked);
 openMapElement.addEventListener('click', openMapClicked);
+smsLinkElement.addEventListener('click', smsLinkClicked);
 deleteRunElement.addEventListener('click', deleteClicked);
 
 document.addEventListener('visibilitychange', function () {

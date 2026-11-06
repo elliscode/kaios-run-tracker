@@ -9,7 +9,7 @@
 (function (root) {
   // Bump whenever the filtering/derivation below changes, so cached stats on
   // stored runs get recomputed (see db.js / app.js ensureStats).
-  const STATS_VERSION = 1;
+  const STATS_VERSION = 2;
 
   const EARTH_RADIUS_M = 6371008.8;
   const METERS_PER_MILE = 1609.344;
@@ -21,8 +21,8 @@
   const MIN_STEP_M = 5;
   // ...or the average of the two points' accuracy radii, if that's larger.
   const ACCURACY_STEP_FACTOR = 1;
-  // ~25 km/h -- far faster than running, so anything above it is a GPS jump.
-  const MAX_SPEED_MPS = 7;
+  // ~45 km/h -- just above Usain Bolt's peak sprint, so anything above it is a GPS jump.
+  const MAX_SPEED_MPS = 12.5;
   // If this many points in a row are rejected as too fast, the anchor itself
   // was probably the bad point -- move the anchor without adding distance.
   const REANCHOR_AFTER = 5;

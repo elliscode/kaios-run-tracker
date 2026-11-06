@@ -126,7 +126,7 @@ button[nav-selectable="false"] {
   width: 100%;
   height: 60px;
   min-height: 60px;
-  margin: 2.5px 0 32px;
+  margin: 6px 0 32px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -137,6 +137,7 @@ button[nav-selectable="false"] {
    doesn't overflow sideways (see foursure's notes/kaios-softkey-fixed-
    position-bug.md) */
 .nav-selectable-ad {
+  position: relative;
   width: 240px;
   max-width: 100%;
   height: 60px;
@@ -144,8 +145,18 @@ button[nav-selectable="false"] {
   outline: none;
 }
 
-.nav-selectable-ad:focus {
-  box-shadow: inset 0 0 0 3px #bf360c;
+/* An inset shadow is painted over by the full-bleed banner <img>, and an
+   outward one (foursure's approach) gets its sides clipped at the screen
+   edge here -- so draw the ring on an overlay above the ad's content. */
+.nav-selectable-ad:focus::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 3px solid #bf360c;
+  pointer-events: none;
 }
 
 .nav-selectable-ad img {

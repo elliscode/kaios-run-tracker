@@ -1,6 +1,7 @@
-// Share page for an uploaded run: /view/index.html?id=<16-char share id>. Fetches the run
-// (and the Maps key) from the API, recomputes the stats with the exact same
-// stats.js the app uses, then loads map.js to draw the route.
+// Share page for an uploaded run: /view/<16-char share id> (CloudFront serves
+// /view/index.html for that path, see website/cloudfront/view-rewrite.js).
+// Fetches the run (and the Maps key) from the API, recomputes the stats with
+// the exact same stats.js the app uses, then loads map.js to draw the route.
 const API_DOMAIN = 'https://api.runtracker.elliscode.com';
 const ID_REGEX = /^[0-9a-zA-Z]{16}$/;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -11,9 +12,20 @@ const statusElement = document.getElementById('status');
 let apiKey;
 let routePoints = [];
 
+let downloadSamples = [];
+let downloadName = '';
+
+// Last part of the path, like the GPS Location Sharer viewer's
+// getEndOfPath(); falls back to ?id= so links shared before the switch to
+// /view/<id> keep working.
 function getRunId() {
-  const id = new URLSearchParams(window.location.search).get('id');
-  return id && ID_REGEX.test(id) ? id : null;
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const fromPath = parts[parts.length - 1];
+  if (fromPath && ID_REGEX.test(fromPath)) {
+    return fromPath;
+  }
+  const fromQuery = new URLSearchParams(window.location.search).get('id');
+  return fromQuery && ID_REGEX.test(fromQuery) ? fromQuery : null;
 }
 
 function showStatus(text) {
@@ -63,8 +75,13 @@ function renderRun(response) {
   setText('stat-pace-mi', RunStats.formatPace(stats.paceMsPerMi) + ' /mi');
   setText('stat-kmh', stats.speedKmh.toFixed(1) + ' km/h');
   setText('stat-mph', stats.speedMph.toFixed(1) + ' mph');
-  setText('footer', stats.sampleCount + ' GPS samples, ' + stats.keptCount +
-    ' used for distance. This shared run is deleted after ' + formatDate(response.expiresAt, false) + '.');
+  setText('footer-text', stats.sampleCount + ' samples (' + stats.keptCount + ' used) · deleted after ' +
+    formatDate(response.expiresAt, false));
+
+  downloadSamples = samples;
+  const d = new Date(run.startTime);
+  downloadName = 'run-' + d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '-' +
+    pad2(d.getHours()) + pad2(d.getMinutes()) + '-' + response.id + '.json';
 
   // Draw the same points that counted toward distance; fall back to every
   // sample if filtering left too few to draw a line.
@@ -81,9 +98,26 @@ function renderRun(response) {
 
   apiKey = response.key;
   const scriptTag = document.createElement('script');
-  scriptTag.src = '../js/map.js?v=1.0.0';
+  scriptTag.src = '/js/map.js?v=1.1.2';
   document.body.appendChild(scriptTag);
 }
+
+// One object per sample, the same shape the app records (timestamp in epoch
+// ms). lat/lon are the uploaded values, rounded to 7 decimals (~1 cm).
+// Never includes the Maps key from the /view response.
+function downloadJson() {
+  const blob = new Blob([JSON.stringify(downloadSamples, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = downloadName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+document.getElementById('download').addEventListener('click', downloadJson);
 
 function loadRun() {
   const id = getRunId();

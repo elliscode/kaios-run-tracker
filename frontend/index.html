@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="theme-color" content="rgb(191, 54, 12)" />
     <title>Run Tracker</title>
-    <link rel="stylesheet" type="text/css" href="./src/css/header.css?v=1.0.0" />
-    <link rel="stylesheet" type="text/css" href="./src/css/softkey.css?v=1.0.0" />
-    <link rel="stylesheet" type="text/css" href="./src/css/run-tracker.css?v=1.0.0" />
-    <link rel="stylesheet" type="text/css" href="./src/css/root.css?v=1.0.0" />
+    <!-- every ?v= below matches b2g_features.version in manifest.webmanifest;
+         bump them together when releasing -->
+    <link rel="stylesheet" type="text/css" href="./src/css/header.css?v=3.0.1" />
+    <link rel="stylesheet" type="text/css" href="./src/css/softkey.css?v=3.0.1" />
+    <link rel="stylesheet" type="text/css" href="./src/css/run-tracker.css?v=3.0.1" />
+    <link rel="stylesheet" type="text/css" href="./src/css/root.css?v=3.0.1" />
 </head>
 
 <body>
@@ -72,12 +74,9 @@
                 <span class="label">Avg speed</span>
                 <span class="value" id="detail-speed"></span>
             </div>
-            <div class="flex col info">
-                <span class="label">Sharing</span>
-                <span class="value" id="detail-share"></span>
-            </div>
             <button nav-selectable="true" id="upload">Upload &amp; share run</button>
             <button nav-selectable="false" id="open-map" class="hidden">Open map</button>
+            <button nav-selectable="false" id="sms-link" class="hidden">Send link by SMS</button>
             <button nav-selectable="true" id="delete-run">Delete run</button>
             <div class="flex col info">
                 <span class="label">GPS samples</span>
@@ -93,14 +92,14 @@
             <label id="right" onclick="Nav.softkey('SoftRight');"></label>
         </div>
     </div>
-    <script type="text/javascript" src="./src/js/kaiads.v5.min.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/stats.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/nav.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/db.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/gps.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/api.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/app.js?v=1.0.0"></script>
-    <script type="text/javascript" src="./src/js/ads.js?v=1.0.0"></script>
+    <script type="text/javascript" src="./src/js/kaiads.v5.min.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/stats.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/nav.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/db.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/gps.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/api.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/app.js?v=3.0.1"></script>
+    <script type="text/javascript" src="./src/js/ads.js?v=3.0.1"></script>
 </body>
 
 </html>

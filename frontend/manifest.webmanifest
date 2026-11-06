@@ -24,7 +24,7 @@
         "permissions": {
             "geolocation": ""
         },
-        "version": "3.0.0",
+        "version": "3.0.1",
         "developer": {
             "name": "elliscode",
             "url": "http://www.elliscode.com"
